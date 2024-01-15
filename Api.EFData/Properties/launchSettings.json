@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Api.EFData": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
