@@ -7,7 +7,7 @@ namespace Api.App.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public sealed class FileController(ILogger<FileController> logger) : ControllerBase
+public sealed class FileController : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType<IEnumerable<byte>>(200)]

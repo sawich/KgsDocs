@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Api.Domain.Enums;
+using Microsoft.AspNetCore.Identity;
 
 namespace Api.Infrastructure.Persistent.Models;
 

@@ -1,10 +1,11 @@
 ﻿namespace Api.Infrastructure.Generators.Schemas.Enums;
 
-public enum SchemaEntity
+public enum SchemaEntityVariant
 {
     None,
     Button,
     List,
+    MultiList,
     Panel,
     File,
     TextBox,

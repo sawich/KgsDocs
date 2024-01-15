@@ -3,10 +3,7 @@ using Api.Infrastructure.Extensions;
 
 using var host = Host
     .CreateDefaultBuilder(args)
-    .ConfigureServices((builder, services) =>
-    {
-        services.AddPersistent(builder.HostingEnvironment);
-    })
+    .ConfigureServices((builder, services) => services.AddPersistent(builder.HostingEnvironment))
     .UseConsoleLifetime()
     .Build();
 

@@ -1,4 +1,4 @@
-﻿namespace Api.Infrastructure.Persistent.Models;
+﻿namespace Api.Domain.Enums;
 
 public enum JobTitle
 {

@@ -3,6 +3,7 @@ name: kgs-docs
 
 services:
   api.app:
+    container_name: kgs-docs.app
     image: kgs-docs.app
     build:
       context: .
@@ -14,7 +15,7 @@ services:
       - postgres
 
   efdata:
-    container_name: openworker.efdata
+    container_name: kgs-docs.efdata
     image: kgs-docs.efdata
     build:
       context: .

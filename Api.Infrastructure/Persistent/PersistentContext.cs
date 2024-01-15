@@ -11,6 +11,7 @@ public sealed class PersistentContext(DbContextOptions<PersistentContext> option
     public DbSet<HistoryModel> Histories => Set<HistoryModel>();
     public DbSet<DocumentModel> Documents => Set<DocumentModel>();
     public DbSet<DiscussionModel> Discussions => Set<DiscussionModel>();
+    public DbSet<DocumentListModel> DocumentList => Set<DocumentListModel>();
     public DbSet<FamiliarizationModel> Familiarizations => Set<FamiliarizationModel>();
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -22,6 +23,7 @@ public sealed class PersistentContext(DbContextOptions<PersistentContext> option
         builder.Entity<HistoryModel>().HasKey(e => e.Id);
         builder.Entity<DocumentModel>().HasKey(e => e.Id);
         builder.Entity<DiscussionModel>().HasKey(e => e.Id);
+        builder.Entity<DocumentListModel>().HasKey(e => e.Id);
         builder.Entity<FamiliarizationModel>().HasKey(e => e.Id);
 
         base.OnModelCreating(builder);

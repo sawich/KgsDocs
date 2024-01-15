@@ -3,13 +3,11 @@ using Api.Infrastructure.Generators.Schemas.Enums;
 
 namespace Api.Infrastructure.Generators.Schemas.Entities;
 
-public class PanelSchemaEntity(string name) : SchemaGenerator, IParentSchemaEntity
+public sealed record PanelSchemaEntity(IReadOnlyList<object> Entities, string Label) : ISchemaEntityRepresentative
 {
     #region IParentSchemaEntity
 
-    public SchemaEntity Entity { get; } = SchemaEntity.TextLine;
+    public SchemaEntityVariant Entity { get; } = SchemaEntityVariant.Panel;
 
     #endregion IParentSchemaEntity
-
-    public string Label { get; } = name;
 }

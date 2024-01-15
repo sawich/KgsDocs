@@ -2,4 +2,4 @@
 
 namespace Api.App.DataTypes;
 
-public sealed record SchemaCatalogEntity(string Name, RootSchemaGenerator Schema, bool IsUnused = false);
+public sealed record SchemaCatalogEntity(string Name, IReadOnlyList<object> Entities);

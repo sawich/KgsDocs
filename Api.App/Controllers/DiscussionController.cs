@@ -1,6 +1,6 @@
 ﻿using Api.App.Helpers;
 using Api.App.Requests;
-using Api.Infrastructure.Mapper;
+using Api.Domain.Responses.Lists;
 using Api.Infrastructure.Persistent;
 using Api.Infrastructure.Persistent.Models;
 using AutoMapper;

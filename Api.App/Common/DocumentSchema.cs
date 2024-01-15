@@ -1,62 +1,85 @@
 ﻿using Api.App.DataTypes;
 using Api.Infrastructure.Generators.Schemas;
+using Api.Infrastructure.Generators.Schemas.DataTypes;
 using Api.Infrastructure.Generators.Schemas.Enums;
+using Api.Infrastructure.Persistent;
 using Api.Infrastructure.Persistent.Models.Documents;
-using System.Reflection;
 
 namespace Api.App.Common;
 
-internal static class DocumentSchema
+public sealed record DocumentSchemaCreationContext(List<List<SchemaCatalogEntity>> Representatives, List<SchemaEntityParser> Parsers)
 {
-    public static IReadOnlyList<SchemaCatalogEntity> Catalog { get; } = new SchemaCatalogEntity[]
-        {
-            new("Входящий документ", CreateIncomingDocumentSchema()),
-            //new("Исходящий документ", CreateOutgoingDocumentSchema()),
-            //new("Договор", CreateAgreementSchema()),
-            //new("Доверенность", CreatePowerOfAttorneySchema()),
-            //new("Приказы", CreateOrdersSchema()),
-            //new("Обходной лист", CreateBypassSheetSchema()),
-            //new("Заявка на мобилизацию", CreateApplicationForMobilizationSchema()),
-            //new("Лист испытательного срока", CreateProbationPeriodSheetSchema()),
-            //new("Заявка на командировку", CreateApplicationForABusinessTripSchema()),
-            //new("Заявка на подбор персонала", CreateRecruitmentApplicationSchema()),
-            //new("Заявка на проведения инструктажа", CreateApplicationForTrainingSchema()),
-            //new("Акт списания ТМЦ", CreateInventoryWriteOffActSchema()),
-            //new("Заявка на наряд заказ", CreateRequestForWorkPrderSchema()),
-            //new("Служебная записка", CreateServiceMemoSchema()),
-            //new("Заявка на транспорт", CreateApplicationForTransportSchema()),
-            //new("Заявка на газификацию без СМР", CreateApplicationForGasificationWithoutConstructionAndInstallationWorkSchema()),
-            //new("Заявка на газификацию с СМР", CreateApplicationForGasificationWithConstructionAndInstallationWorkSchema()),
-        };
-
-    public static bool IsValidCatalogIndex(int index) => index >= 0 && index < Catalog.Count;
-
-    private static PropertyInfo GetProperty<T>(string name) where T : new()
+    public void Create(Action<List<SchemaCatalogEntity>, List<SchemaEntityParser>> callable)
     {
-        var property = typeof(T).GetProperty(name);
-        ArgumentNullException.ThrowIfNull(property);
-                
-        return property;
+        var representative = new List<SchemaCatalogEntity>();
+
+        callable(representative, Parsers);
+
+        Representatives.Add(representative);
     }
+}
+
+public sealed class DocumentSchema
+{
+    public IReadOnlyList<IReadOnlyList<SchemaCatalogEntity>> Representatives { get; }
+    public IReadOnlyList<SchemaEntityParser> Parsers { get; } // IReadOnlyList<IParserSchemaEntity>
+
+    public DocumentSchema(IServiceProvider provider)
+    {
+        var representatives = new List<List<SchemaCatalogEntity>>();
+        var parsers = new List<SchemaEntityParser>();
+
+        var ctx = new DocumentSchemaCreationContext(representatives, parsers);
+        ctx.Create((representatives, parsers) => CreateIncomingDocumentSchema(representatives, parsers, provider));
+
+
+        //new("Исходящий документ", CreateOutgoingDocumentSchema()),
+        //new("Договор", CreateAgreementSchema()),
+        //new("Доверенность", CreatePowerOfAttorneySchema()),
+        //new("Приказы", CreateOrdersSchema()),
+        //new("Обходной лист", CreateBypassSheetSchema()),
+        //new("Заявка на мобилизацию", CreateApplicationForMobilizationSchema()),
+        //new("Лист испытательного срока", CreateProbationPeriodSheetSchema()),
+        //new("Заявка на командировку", CreateApplicationForABusinessTripSchema()),
+        //new("Заявка на подбор персонала", CreateRecruitmentApplicationSchema()),
+        //new("Заявка на проведения инструктажа", CreateApplicationForTrainingSchema()),
+        //new("Акт списания ТМЦ", CreateInventoryWriteOffActSchema()),
+        //new("Заявка на наряд заказ", CreateRequestForWorkPrderSchema()),
+        //new("Служебная записка", CreateServiceMemoSchema()),
+        //new("Заявка на транспорт", CreateApplicationForTransportSchema()),
+        //new("Заявка на газификацию без СМР", CreateApplicationForGasificationWithoutConstructionAndInstallationWorkSchema()),
+        //new("Заявка на газификацию с СМР", CreateApplicationForGasificationWithConstructionAndInstallationWorkSchema()),
+
+        Representatives = representatives.Select(e => e.ToArray()).ToArray();
+        Parsers = parsers.ToArray();
+    }
+
+    public bool IsValidCatalogIndex(int index) => index >= 0 && index < Representatives.Count;
 
     /// <summary>
     /// Входящий документ
     /// </summary>
-    private static RootSchemaGenerator CreateIncomingDocumentSchema()
+    private static void CreateIncomingDocumentSchema(List<SchemaCatalogEntity> representatives, List<SchemaEntityParser> parsers, IServiceProvider provider)
     {
-        var schema = SchemaDocumentGenerator.CreateSchema(typeof(IncomingDocumentModel));
+        using var scope = provider.CreateScope();
+        using var context = scope.ServiceProvider.GetRequiredService<PersistentContext>();
 
-        schema.AddPanel(e => e
-                .AddTextLine(GetProperty<IncomingDocumentModel>(nameof(IncomingDocumentModel.MailSender)), "Отправитель письма")
-                .AddList(GetProperty<IncomingDocumentModel>(nameof(IncomingDocumentModel.MailType)), "Тип письма", SourceListEntity.Mail)
-                .AddDateOnly(GetProperty<IncomingDocumentModel>(nameof(IncomingDocumentModel.RegisteredAt)), "Дата регистрации")
-                .AddDateOnly(GetProperty<IncomingDocumentModel>(nameof(IncomingDocumentModel.OutcomingAt)), "Исходящая дата")
-                .AddNuberLine(GetProperty<IncomingDocumentModel>(nameof(IncomingDocumentModel.MailRegistrationNumber)), "Регистрационный номер письма")
-                .AddNuberLine(GetProperty<IncomingDocumentModel>(nameof(IncomingDocumentModel.OutcomingNumber)), "Исходящий номер"))
-            .AddPanel(e => e.AddTextBox(GetProperty<IncomingDocumentModel>(nameof(IncomingDocumentModel.BriefContentOfMail)), "Краткое содержание письма"));
-        // .AddPanel(e => e.AddFile(nameof(IncomingDocumentModel.), "Файл", SourceFileEntity.Documents));
+        var generator = new SchemaGenerator(typeof(IncomingDocumentModel));
 
-        return schema;
+        generator.AddPanel(panel => panel
+            .AddTextLine(nameof(IncomingDocumentModel.MailSender), "Отправитель письма")
+            .AddList(nameof(IncomingDocumentModel.MailType), context.DocumentList, "Тип письма")
+            .AddDateOnly(nameof(IncomingDocumentModel.RegisteredAt), "Дата регистрации")
+            .AddDateOnly(nameof(IncomingDocumentModel.OutcomingAt), "Исходящая дата")
+            .AddNumberLine(nameof(IncomingDocumentModel.MailRegistrationNumber), "Регистрационный номер письма")
+            .AddNumberLine(nameof(IncomingDocumentModel.OutcomingNumber), "Исходящий номер"));
+
+        generator.AddPanel(e => e.AddTextBox(nameof(IncomingDocumentModel.BriefContentOfMail), "Краткое содержание письма"));
+
+        // generator.AddPanel(e => e.AddFile(nameof(IncomingDocumentModel.), "Файл", SourceFileEntity.Documents));
+
+        representatives.Add(new("Входящий документ", generator.BuildRepresentatives()));
+        parsers.Add(generator.BuildParsers());
     }
 
     ///// <summary>
